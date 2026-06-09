@@ -20,9 +20,21 @@ interface Match {
   id: string;
   status?: "conflict" | "close" | "safe";
   local_date: string;
+  syria_date?: string | null;
   group?: string;
   home_team_name_en: string;
   away_team_name_en: string;
+  home_score?: string;
+  away_score?: string;
+  finished?: string;
+  time_elapsed?: string;
+}
+
+// ─── Match Status Helper ──────────────────────────────────────────────────────
+function getMatchState(item: Match): "finished" | "live" | "upcoming" {
+  if (item.finished === "TRUE") return "finished";
+  if (item.time_elapsed && item.time_elapsed !== "notstarted") return "live";
+  return "upcoming";
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -37,12 +49,21 @@ function formatDateTime(dateStr: string) {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
   const monthName = monthNames[parseInt(month, 10) - 1] ?? month;
+
+  // Convert HH:MM (24h) → h:MM AM/PM (12h)
+  const [hStr, mStr] = timePart.split(":");
+  const h24 = parseInt(hStr, 10);
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const time12 = `${h12}:${mStr} ${ampm}`;
+
   return {
     date: `${parseInt(day, 10)} ${monthName}`,
-    time: timePart,
+    time: time12,
     fullDate: `${parseInt(day, 10)} ${monthName} ${year}`,
   };
 }
+
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 type StatusCfg = { border: string; bg: string; accent: string; tag: string; tagBg: string };
@@ -69,20 +90,38 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 
 // ─── All Matches Row ──────────────────────────────────────────────────────────
 function AllMatchRow({ item, index }: { item: Match; index: number }) {
-  const { date, time } = formatDateTime(item.local_date);
+  const { date, time } = formatDateTime(item.syria_date ?? item.local_date);
   const home = item.home_team_name_en || "TBD";
   const away = item.away_team_name_en || "TBD";
   const isTbd = !item.home_team_name_en && !item.away_team_name_en;
+  const matchState = getMatchState(item);
 
   return (
     <View style={[s.row, index % 2 === 0 ? s.rowEven : s.rowOdd, isTbd && s.rowDim]}>
       <Text style={s.rowNum}>{index + 1}</Text>
       <View style={s.rowDate}>
         <Text style={s.rowDateText}>{date}</Text>
-        <Text style={s.rowTimeText}>{time}</Text>
+        {matchState === "finished" ? (
+          <Text style={s.rowScore}>
+            {item.home_score} - {item.away_score}
+          </Text>
+        ) : matchState === "live" ? (
+          <View style={s.rowLiveWrap}>
+            <View style={s.rowLiveDot} />
+            <Text style={s.rowLiveText}>{item.time_elapsed}&apos;</Text>
+          </View>
+        ) : (
+          <Text style={s.rowTimeText}>{time}</Text>
+        )}
       </View>
       <Text style={[s.rowTeam, s.right]} numberOfLines={1}>{home}</Text>
-      <View style={s.rowVsWrap}><Text style={s.rowVs}>vs</Text></View>
+      <View style={s.rowVsWrap}>
+        {matchState === "finished" ? (
+          <Text style={s.rowVsFT}>FT</Text>
+        ) : (
+          <Text style={s.rowVs}>vs</Text>
+        )}
+      </View>
       <Text style={[s.rowTeam, s.left]} numberOfLines={1}>{away}</Text>
       {item.group ? (
         <View style={s.rowGroup}><Text style={s.rowGroupText}>{item.group}</Text></View>
@@ -103,10 +142,11 @@ function SchedCard({
   index: number;
   onDismiss: (id: string) => void;
 }) {
-  const { fullDate, time } = formatDateTime(item.local_date);
+  const { fullDate, time } = formatDateTime(item.syria_date ?? item.local_date);
   const cfg = statusCfg(item.status);
   const home = item.home_team_name_en || "TBD";
   const away = item.away_team_name_en || "TBD";
+  const matchState = getMatchState(item);
 
   function handleDismiss() {
     Alert.alert(
@@ -132,7 +172,18 @@ function SchedCard({
           <View style={s.cardIndexWrap}>
             <Text style={s.cardIndex}>{index + 1}</Text>
           </View>
-          {cfg.tag ? (
+          {matchState === "live" && (
+            <View style={s.cardLiveBadge}>
+              <View style={s.cardLiveDot} />
+              <Text style={s.cardLiveText}>LIVE {item.time_elapsed}&apos;</Text>
+            </View>
+          )}
+          {matchState === "finished" && (
+            <View style={s.cardFtBadge}>
+              <Text style={s.cardFtText}>FT</Text>
+            </View>
+          )}
+          {cfg.tag && matchState === "upcoming" ? (
             <View style={[s.cardTag, { backgroundColor: cfg.tagBg }]}>
               <Text style={[s.cardTagText, { color: cfg.accent }]}>{cfg.tag}</Text>
             </View>
@@ -142,18 +193,28 @@ function SchedCard({
               <Text style={s.cardGroupText}>Group {item.group}</Text>
             </View>
           ) : null}
-          {/* Dismiss X */}
           <Pressable onPress={handleDismiss} style={s.dismissBtn} hitSlop={10}>
             <Text style={s.dismissText}>{"\u00D7"}</Text>
           </Pressable>
         </View>
 
-        {/* Teams */}
+        {/* Teams + Score */}
         <View style={s.cardTeams}>
           <Text style={[s.cardTeamName, s.right]} numberOfLines={2}>{home}</Text>
-          <View style={s.cardVsCircle}>
-            <Text style={s.cardVs}>VS</Text>
-          </View>
+          {matchState === "finished" || matchState === "live" ? (
+            <View style={s.cardScoreBox}>
+              <Text style={[
+                s.cardScoreText,
+                matchState === "live" && { color: "#FF3B55" }
+              ]}>
+                {item.home_score ?? "0"} - {item.away_score ?? "0"}
+              </Text>
+            </View>
+          ) : (
+            <View style={s.cardVsCircle}>
+              <Text style={s.cardVs}>VS</Text>
+            </View>
+          )}
           <Text style={[s.cardTeamName, s.left]} numberOfLines={2}>{away}</Text>
         </View>
 
@@ -161,7 +222,15 @@ function SchedCard({
         <View style={s.cardMeta}>
           <Text style={s.cardMetaText}>📅 {fullDate}</Text>
           <View style={s.metaDivider} />
-          <Text style={s.cardMetaText}>🕐 {time}</Text>
+          {matchState === "upcoming" ? (
+            <Text style={s.cardMetaText}>🕐 {time}</Text>
+          ) : matchState === "live" ? (
+            <Text style={[s.cardMetaText, { color: "#FF3B55" }]}>⏱ {item.time_elapsed}&apos;</Text>
+          ) : (
+            <Text style={[s.cardMetaText, { color: "#22D3A5" }]}>✓ Full Time</Text>
+          )}
+          <View style={s.metaDivider} />
+          <Text style={[s.cardMetaText, { color: "#22D3A5", fontSize: 10 }]}>🇸🇾 Syria</Text>
         </View>
       </View>
     </View>
@@ -565,9 +634,14 @@ const s = StyleSheet.create({
   rowDate: { width: 78 },
   rowDateText: { color: "#2D4B6A", fontSize: 10, fontWeight: "600" },
   rowTimeText: { color: "#5B8DB8", fontSize: 14, fontWeight: "700", marginTop: 1 },
+  rowScore: { color: "#E8F3FF", fontSize: 13, fontWeight: "800", marginTop: 1 },
+  rowLiveWrap: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  rowLiveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#FF3B55" },
+  rowLiveText: { color: "#FF3B55", fontSize: 12, fontWeight: "800" },
   rowTeam: { flex: 1, color: "#BDD5EE", fontSize: 13, fontWeight: "600" },
   rowVsWrap: { width: 22, alignItems: "center" },
   rowVs: { color: "#142234", fontSize: 9, fontWeight: "800" },
+  rowVsFT: { color: "#22D3A5", fontSize: 8, fontWeight: "900" },
   rowGroup: {
     width: 30, height: 22,
     backgroundColor: "#0D1E32", borderRadius: 5,
@@ -621,6 +695,29 @@ const s = StyleSheet.create({
     justifyContent: "center", alignItems: "center",
   },
   cardVs: { color: "#203450", fontSize: 10, fontWeight: "900" },
+  cardScoreBox: {
+    minWidth: 50, height: 34,
+    backgroundColor: "#0D1E32", borderRadius: 8,
+    justifyContent: "center", alignItems: "center",
+    paddingHorizontal: 8,
+  },
+  cardScoreText: { color: "#E8F3FF", fontSize: 18, fontWeight: "900", letterSpacing: 1 },
+  cardLiveBadge: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    backgroundColor: "#3D0B15", borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: "#FF3B55",
+  },
+  cardLiveDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: "#FF3B55",
+  },
+  cardLiveText: { color: "#FF3B55", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 },
+  cardFtBadge: {
+    backgroundColor: "#0A2518", borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: "#22D3A5",
+  },
+  cardFtText: { color: "#22D3A5", fontSize: 11, fontWeight: "900" },
   cardMeta: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#060F1E", borderRadius: 8,
