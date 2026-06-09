@@ -1,50 +1,155 @@
-# Welcome to your Expo app 👋
+<div align="center">
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# ⚽ Last Dance
+### FIFA World Cup 2026 — Personal Schedule Tracker
 
-## Get started
+![Platform](https://img.shields.io/badge/platform-Android-green?style=flat-square&logo=android)
+![Expo](https://img.shields.io/badge/Expo-54.0-black?style=flat-square&logo=expo)
+![React Native](https://img.shields.io/badge/React%20Native-0.81-blue?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
+![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)
 
-1. Install dependencies
+**Track your favorite teams' matches across the entire FIFA World Cup 2026 tournament.**  
+Add teams, detect scheduling conflicts, and build your personal viewing schedule — all in a sleek dark UI.
 
-   ```bash
-   npm install
-   ```
+</div>
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 📱 Features
 
-In the output, you'll find options to open the app in a
+- 🔍 **Search & Add Teams** — Type any country name and instantly filter their matches
+- 📅 **Personal Schedule** — See only the games that matter to you, sorted by date
+- ⚠️ **Conflict Detection** — Visual indicators when matches overlap or have less than 1 hour gap
+- 🗑️ **Dismiss Matches** — Swipe away matches you don't want to watch (with confirmation)
+- 💾 **Persistent Storage** — Your selections are saved across app restarts (AsyncStorage)
+- 🔄 **Reset Anytime** — One tap to restore everything back to default
+- 🌐 **Live Data** — Fetches real World Cup 2026 schedule from a public API
+- 🌙 **Dark Mode UI** — Elegant deep navy design, easy on the eyes
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🖼️ Screenshots
 
-## Get a fresh project
+> Coming soon — the app will be available as an APK download below.
 
-When you're ready, run:
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v20+
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+
+### Installation
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/fifia.git
+cd fifia
+
+# Install dependencies
+npm install
+
+# Start the dev server
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Then scan the QR code with the **Expo Go** app on your phone.
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📦 Download APK
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+> APKs are automatically built using GitHub Actions on every push to `main`.
 
-## Join the community
+1. Go to the [**Actions**](../../actions) tab
+2. Click the latest **"Build Android APK"** workflow run
+3. Scroll down to **Artifacts**
+4. Download **`last-dance-apk`**
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🏗️ Build It Yourself
+
+### Using GitHub Actions (recommended — no setup needed)
+
+Push your code to the `main` branch. The APK will be built automatically in ~12 minutes.  
+See [`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml) for the workflow config.
+
+### Using EAS Cloud
+
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login to Expo
+eas login
+
+# Build APK
+eas build --platform android --profile production
+```
+
+### Locally (requires Android SDK)
+
+```bash
+eas build --local --platform android --profile production
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| [Expo](https://expo.dev) ~54.0 | App framework & build tooling |
+| [React Native](https://reactnative.dev) 0.81 | Cross-platform mobile UI |
+| [Expo Router](https://docs.expo.dev/router/introduction/) | File-based navigation |
+| [TypeScript](https://www.typescriptlang.org/) 5.9 | Type safety |
+| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) | Local data persistence |
+| [Axios](https://axios-http.com/) | API requests |
+| [expo-splash-screen](https://docs.expo.dev/versions/latest/sdk/splash-screen/) | Custom splash screen |
+
+---
+
+## 📁 Project Structure
+
+```
+fifia/
+├── app/
+│   ├── _layout.tsx          # Root layout & navigation
+│   └── index.tsx            # Main screen (schedule UI)
+├── hooks/
+│   ├── useWorldCupSchedule.js  # Fetches & filters match data
+│   └── usePersistentState.ts   # AsyncStorage state management
+├── assets/
+│   └── images/              # App icons & splash screen
+├── .github/
+│   └── workflows/
+│       └── build-apk.yml    # GitHub Actions APK builder
+├── app.json                 # Expo config
+└── eas.json                 # EAS Build config
+```
+
+---
+
+## ⚙️ EAS Build Profiles
+
+| Profile | Type | Use case |
+|---|---|---|
+| `development` | APK | Dev client for testing |
+| `preview` | APK | Internal testers |
+| `production` | APK | Final release |
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first.
+
+---
+
+## 📄 License
+
+MIT © 2026 — Built with ❤️ for the beautiful game.

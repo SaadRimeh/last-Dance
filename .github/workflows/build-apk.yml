@@ -1,0 +1,55 @@
+name: Build Android APK
+
+on:
+  # Runs when you push to main branch
+  push:
+    branches: [main]
+  # OR you can trigger it manually from GitHub website
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download your code onto the GitHub server
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. Install Java (required for Android builds)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # 4. Install your project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 5. Install EAS CLI and login using your secret token
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # 6. Build the APK locally on the GitHub server
+      - name: Build APK
+        run: eas build --local --platform android --profile production --non-interactive --output ./build/app-release.apk
+
+      # 7. Upload the APK so you can download it
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-dance-apk
+          path: ./build/app-release.apk
+          retention-days: 7
