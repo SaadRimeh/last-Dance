@@ -35,11 +35,25 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Debug Secret Presence
+        run: |
+          if [ -z "$MY_TOKEN" ]; then
+            echo "EXPO_TOKEN secret is EMPTY or NOT FOUND in this environment!"
+          else
+            echo "EXPO_TOKEN secret is present! Length is ${#MY_TOKEN} characters."
+          fi
+        env:
+          MY_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
       - name: Verify Expo login
         run: eas whoami
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build APK
         run: eas build --local --platform android --profile production --non-interactive --output ./build/app-release.apk
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
