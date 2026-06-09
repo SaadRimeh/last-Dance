@@ -29,17 +29,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Verify Expo login
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas whoami
 
       - name: Build APK
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --local --platform android --profile production --non-interactive --output ./build/app-release.apk
 
       - name: Upload APK artifact
@@ -48,4 +47,5 @@ jobs:
           name: last-dance-apk
           path: ./build/app-release.apk
           retention-days: 7
+
 
