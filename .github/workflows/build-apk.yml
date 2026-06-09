@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
     steps:
       # 1. Download your code onto the GitHub server
@@ -35,15 +37,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 5. Install EAS CLI and login using your secret token
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+      # 5. Install EAS CLI
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
 
       # 6. Build the APK locally on the GitHub server
       - name: Build APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --local --platform android --profile production --non-interactive --output ./build/app-release.apk
 
       # 7. Upload the APK so you can download it
