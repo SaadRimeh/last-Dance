@@ -31,7 +31,15 @@ Add teams, detect scheduling conflicts, and build your personal viewing schedule
 
 ## 🖼️ Screenshots
 
-> Coming soon — the app will be available as an APK download below.
+<div align="center">
+
+| Splash Screen | All Matches |
+|:---:|:---:|
+| ![Splash Screen](assets/screenshots/screenshot-1.jpg) | ![All Matches](assets/screenshots/screenshot-2.jpg) |
+| **My Schedule** | **Conflicts View** |
+| ![My Schedule](assets/screenshots/screenshot-3.jpg) | ![Conflicts](assets/screenshots/screenshot-4.jpg) |
+
+</div>
 
 ---
 
